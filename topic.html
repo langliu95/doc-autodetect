@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Text Topic Models &mdash; autodetect  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Online Change Detection" href="autocusum.html" />
+    <link rel="prev" title="Time Series Models" href="time.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> autodetect
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0a1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="start.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple.html">Simple Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="latent.html">Latent Variable Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="time.html">Time Series Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Text Topic Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-description">Data description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#change-detection-in-language-level">Change detection in language level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autocusum.html">Online Change Detection</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">autodetect</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Text Topic Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/topic.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="text-topic-models">
+<h1>Text Topic Models<a class="headerlink" href="#text-topic-models" title="Permalink to this headline">¶</a></h1>
+<p>In this section we introduce a text topic model proposed by
+<a class="reference external" href="http://www.cs.columbia.edu/~djhsu/papers/count_words.pdf">Stratos et al. (2015)</a>
+to detect changes in language level on text data.
+This model is a restricted class of hidden Markov models (HMMs) introduced by
+<a class="reference external" href="https://www.aclweb.org/anthology/J92-4003">Brown et al. (1992)</a>, and thus called the Brown model.
+To be more specific, it is an HMM with discrete emission distribution such that
+each row of the emission matrix (rows for hidden states and columns for word types)
+must have a single nonzero entry, henceforth it can be used as a word embedding scheme.</p>
+<div class="section" id="data-description">
+<h2>Data description<a class="headerlink" href="#data-description" title="Permalink to this headline">¶</a></h2>
+<p>A dataset containing subtitles of TV shows is provided (downloaded from <a class="reference external" href="http://www.tvsubtitles.net/">TVsubtitles</a>) in this package.
+The first two seasons of four TV shows are collected—Friends, Modern Family, the Sopranos,
+and Deadwood.
+Then these text data are preprocessed using the following steps:
+1) replace contractions with their original forms, 2) remove punctuations, 3) tokenization,
+4) remove person names, 5) convert to lower case, 6) replace numbers with their words
+equivalent, 7) remove stopwords, 8) lemmatization.
+To load the data, you need to move to the root directory of this package, then you may, for example, run</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="n">show1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;autodetect/data/subtitles/friends_S1.txt&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;words&#39;</span><span class="p">])</span>
+<span class="n">show2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;autodetect/data/subtitles/deadwood_S1.txt&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;words&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Now we have Season 1 of Friends and Season 1 of Deadwood, and they are apparently different.
+One remarkable discrepency is the former is all about conversations between good friends,
+while the latter is filled of rude words.
+An interesting question to ask is whether the autograd-test can capture this
+language-level transition.</p>
+</div>
+<div class="section" id="change-detection-in-language-level">
+<h2>Change detection in language level<a class="headerlink" href="#change-detection-in-language-level" title="Permalink to this headline">¶</a></h2>
+<p>One possible solution is to model the data with the Brown model, and detect changes
+in model parameters.
+For this purpose, we firstly combine these two shows together and remove words of
+low frequency, then convert the data to the format that can be fed to the Brown model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="k">def</span> <span class="nf">remove_infrequent</span><span class="p">(</span><span class="n">text1</span><span class="p">,</span> <span class="n">text2</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combines two pieces of text and removes infrequent words (&lt; times).&quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text2</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+    <span class="n">rare</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">counts</span> <span class="o">&lt;</span> <span class="n">times</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="o">~</span><span class="n">text</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">rare</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">text</span>
+
+<span class="n">text</span> <span class="o">=</span> <span class="n">remove_infrequent</span><span class="p">(</span><span class="n">show1</span><span class="p">,</span> <span class="n">show2</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">n_states</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">))</span>  <span class="c1"># 100 observations for each transition parameter</span>
+<span class="n">text</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">ints</span><span class="o">.</span><span class="n">values</span>
+</pre></div>
+</div>
+<p>Next, we initialize the Brown model and fit it using the dataset to obtain the MLE.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">autodetect</span> <span class="kn">import</span> <span class="n">AutogradTopic</span>
+<span class="n">n_cats</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutogradTopic</span><span class="p">(</span><span class="n">n_cats</span><span class="p">,</span> <span class="n">n_states</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, noting that emission parameters can easily alter because of the
+shift of high-frequency words while transition parameters are purely determined
+by hidden states which may incorporate more “global” information,
+we perform the autograd-test to detect the existence of a change in
+transition parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="c1"># only detect change in the middle half sample (avoid ill-conditioned information)</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cats</span> <span class="o">-</span> <span class="n">n_states</span><span class="p">,</span> <span class="n">n_cats</span> <span class="o">+</span> <span class="n">n_states</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_states</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># exclude n_cats - n_states emission pars</span>
+<span class="n">stat</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_stats</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">trange</span><span class="o">=</span><span class="n">trange</span><span class="p">,</span> <span class="n">stat_type</span><span class="o">=</span><span class="s1">&#39;scan&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the sake of time, we only compute statistics for locations with a gap of 10.
+In simulation studies, we observe that the linear part in the autograd-test
+tends to be liberal (has high false discovery rate) when applying to Brown models
+with high-dimensional parameter space. To avoid suffering this drawback we use
+the scan test here.</p>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="autodetect.AutogradTopic">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">autodetect.</span></code><code class="sig-name descname"><span class="pre">AutogradTopic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for autograd-test in text topic (Brown) model.</p>
+<p>This model can be used to learn word embeddings from text data.
+See the paper “<a class="reference external" href="http://www.cs.columbia.edu/~djhsu/papers/count_words.pdf">Model-based Word Embeddings from Decomposition of Count
+Matrices</a>”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_cat: int</strong></dt><dd><p>Number of categories of the emission distribution.</p>
+</dd>
+<dt><strong>num_hid: int</strong></dt><dd><p>Number of hidden states.</p>
+</dd>
+<dt><strong>init: numpy.ndarray, shape (num_hid,), optional</strong></dt><dd><p>Initial distribution. Default is None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>embed: numpy.ndarray, shape (num_cat,)</strong></dt><dd><p>Embedding scheme from categories to hidden states.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.compute_stats">
+<code class="sig-name descname"><span class="pre">compute_stats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'autograd'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.compute_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute test statistics.</p>
+<p>This function performs score-based hypothesis tests to detect the existence of a change in a text topic (Brown) model as it learns from
+a continuous, possibly evolving, stream of data.
+Three tests are implemented: the linear test, the scan test, and the autograd-test. The
+linear statistic is the maximum score statistic over all possible locations of
+change. The scan statistic is the maximum score statistic over all possible
+locations of change, and over all possible subsets of parameters in which change occurs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obs: torch.Tensor, shape (size, dim)</strong></dt><dd><p>Observations.</p>
+</dd>
+<dt><strong>alpha: double or list, optional</strong></dt><dd><p>Significance level(s). For the autograd-test it should be a list of length two,
+where the first element is the significance level for the linear statistic and
+the second is for the scan statistic. Default is 0.05.</p>
+</dd>
+<dt><strong>idx: array-like, optional</strong></dt><dd><p>Indices of parameters of interest (the rest parameters are considered constants)
+in the parameter vector.
+Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, which will be set to <code class="docutils literal notranslate"><span class="pre">range(dim)</span></code>.</p>
+</dd>
+<dt><strong>prange: array-like, optional</strong></dt><dd><p>Change cardinality set over which the scan statistic is maximized.
+Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+which will be set to <code class="docutils literal notranslate"><span class="pre">range(1,</span> <span class="pre">min([int(np.sqrt(d)),</span> <span class="pre">len(idx)])</span> <span class="pre">+</span> <span class="pre">1)</span></code>.</p>
+</dd>
+<dt><strong>trange: array-like, optional</strong></dt><dd><p>Change location set over which the statistic is maximized. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+which will be set to <code class="docutils literal notranslate"><span class="pre">range(int(n</span> <span class="pre">/</span> <span class="pre">10)</span> <span class="pre">+</span> <span class="pre">lag,</span> <span class="pre">int(n</span> <span class="pre">*</span> <span class="pre">9</span> <span class="pre">/</span> <span class="pre">10))</span></code>.</p>
+</dd>
+<dt><strong>stat_type: str, optional</strong></dt><dd><p>Type of statistic that is computed. It can take values in <code class="docutils literal notranslate"><span class="pre">['linear',</span> <span class="pre">'scan',</span>
+<span class="pre">'autograd',</span> <span class="pre">'all']</span></code>, where <code class="docutils literal notranslate"><span class="pre">'all'</span></code> indicates calculating all of them. Default is <code class="docutils literal notranslate"><span class="pre">'autograd'</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>stat: torch.Tensor</strong></dt><dd><p>Test statistic at level <code class="docutils literal notranslate"><span class="pre">alpha</span></code>. Reject null if it is larger than 1.</p>
+</dd>
+<dt><strong>tau: int</strong></dt><dd><p>Location of changepoint corresponds to the test statistic.</p>
+</dd>
+<dt><strong>index: array-like</strong></dt><dd><p>Indices of parameters correspond to the test statistic. It will be omitted for the linear test.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>NameError</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">stat_type</span></code> is not in <code class="docutils literal notranslate"><span class="pre">['linear',</span> <span class="pre">'scan',</span> <span class="pre">'autograd',</span> <span class="pre">'all']</span></code>.</p>
+</dd>
+<dt><strong>ValueError</strong></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">alpha</span></code> is not an instance of <code class="docutils literal notranslate"><span class="pre">float</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code>; or if <code class="docutils literal notranslate"><span class="pre">prange</span></code>
+is not within <code class="docutils literal notranslate"><span class="pre">range(1,</span> <span class="pre">len(idx)+1)</span></code>; or if <code class="docutils literal notranslate"><span class="pre">trange</span></code> is not within
+<code class="docutils literal notranslate"><span class="pre">range(lag,</span> <span class="pre">size)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.cond_loglike">
+<code class="sig-name descname"><span class="pre">cond_loglike</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.cond_loglike" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute conditional (on <code class="docutils literal notranslate"><span class="pre">obs[0]</span></code>) log-likelihood.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.get_emission">
+<code class="sig-name descname"><span class="pre">get_emission</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.get_emission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get emission matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.get_transition">
+<code class="sig-name descname"><span class="pre">get_transition</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.get_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get transition matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.information">
+<code class="sig-name descname"><span class="pre">information</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_cats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute score and information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obs: array-like, 1D</strong></dt><dd><p>Integer sequence of observations taking values from 0 to
+<code class="docutils literal notranslate"><span class="pre">num_cat</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
+</dd>
+<dt><strong>freq_cats: array-like, shape (num_cat,), optional</strong></dt><dd><p>Category frequency in observations. Default is None.</p>
+</dd>
+<dt><strong>freq_pairs: array-like, shape (num_hid, num_hid), optional</strong></dt><dd><p>Frequency of pairs of adjacent hidden states.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.log_like">
+<code class="sig-name descname"><span class="pre">log_like</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.log_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log-likelihood.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.mle">
+<code class="sig-name descname"><span class="pre">mle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.mle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute maximum likelihood estimator assuming no change exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obs: array-like, 1D</strong></dt><dd><p>Integer sequence of observations taking values from 0 to
+<code class="docutils literal notranslate"><span class="pre">num_cat</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
+</dd>
+<dt><strong>embed: array-like, 1D</strong></dt><dd><p>Embedding scheme from categories to hidden states.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>G: numpy.ndarray, shape (num_hid, num_cat)</strong></dt><dd><p>Emission matrix.</p>
+</dd>
+<dt><strong>Q: numpy.ndarray, shape (num_hid, num_hid)</strong></dt><dd><p>Transition matrix.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.spectral_method">
+<code class="sig-name descname"><span class="pre">spectral_method</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obs</span></em>, <em class="sig-param"><span class="pre">transform=&lt;ufunc</span> <span class="pre">'sqrt'&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.spectral_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spectral embedding method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obs: array-like, 1D</strong></dt><dd><p>Integer sequence of observations taking values from 0 to
+<code class="docutils literal notranslate"><span class="pre">num_cat</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
+</dd>
+<dt><strong>transform: function, optional</strong></dt><dd><p>Transformation method performed on the frequency of pairs of
+adjacent observations and the frequency of observations. Default
+is <code class="docutils literal notranslate"><span class="pre">np.sqrt</span></code>.</p>
+</dd>
+<dt><strong>alpha: double, optional</strong></dt><dd><p>Smoothing parameter. Default is 0.75.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>embed: numpy.ndarray, 1D</strong></dt><dd><p>Embedding scheme from categories to hidden states.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.train">
+<code class="sig-name descname"><span class="pre">train</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obs</span></em>, <em class="sig-param"><span class="pre">transform=&lt;ufunc</span> <span class="pre">'sqrt'&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">interpolation=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obs: array-like, 1D</strong></dt><dd><p>Integer sequence of observations taking values from 0 to
+<code class="docutils literal notranslate"><span class="pre">num_cat</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
+</dd>
+<dt><strong>transform: function, optional</strong></dt><dd><p>Transformation method performed on the frequency of pairs of
+adjacent observations and the frequency of observations. Default
+is <code class="docutils literal notranslate"><span class="pre">np.sqrt</span></code>.</p>
+</dd>
+<dt><strong>alpha: double, optional</strong></dt><dd><p>Smoothing parameter. Default is 0.75.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.write_emission">
+<code class="sig-name descname"><span class="pre">write_emission</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">emis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.write_emission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write emission matrix.</p>
+<p>Also updates the embedding scheme from categories to hidden states.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="autodetect.AutogradTopic.write_transition">
+<code class="sig-name descname"><span class="pre">write_transition</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tran</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodetect.AutogradTopic.write_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write transition matrix.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="autocusum.html" class="btn btn-neutral float-right" title="Online Change Detection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="time.html" class="btn btn-neutral" title="Time Series Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Lang Liu, Joseph Salmon, and Zaid Harchaoui.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
